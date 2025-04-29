@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px; /* Увеличенный отступ */
+            font-size: 18px; /* Базовый размер шрифта увеличен */
+        }
+
+        .auth-container, .main-container {
+            background: #2a2a2a;
+            border-radius: 25px; /* Увеличен радиус */
+            padding: 30px; /* Увеличен внутренний отступ */
+            width: 100%;
+            max-width: 500px; /* Увеличен максимальная ширина */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6); /* Усиленная тень */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .auth-container h2, .main-container h2 {
+            text-align: center;
+            margin-bottom: 30px; /* Увеличен отступ */
+            font-size: 28px; /* Увеличен размер заголовка */
+        }
+
+        .auth-container input, .main-container input, .main-container select {
+            width: 100%;
+            padding: 15px; /* Увеличен padding */
+            margin: 15px 0; /* Увеличен margin */
+            border: none;
+            border-radius: 8px; /* Увеличен радиус */
+            background: #3a3a3a;
+            color: #fff;
+            font-size: 18px; /* Увеличен размер шрифта */
+        }
+
+        .auth-container button, .main-container button {
+            width: 100%;
+            padding: 15px; /* Увеличен padding */
+            background: #ff6f61;
+            border: none;
+            border-radius: 8px; /* Увеличен радиус */
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 18px; /* Увеличен размер шрифта */
+            font-weight: bold; /* Жирный текст */
+        }
+
+        .auth-container button:hover, .main-container button:hover {
+            background: #ff3d00;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 20px; /* Увеличен отступ */
+            cursor: pointer;
+            color: #ff6f61;
+            font-size: 18px; /* Увеличен размер шрифта */
+        }
+
+        .goal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Более выразительный интервал между элементами */
+            margin-bottom: 40px; /* Больше пространства после формы */
+        }
+
+        .goals-list {
+            max-height: 500px; /* Ещё больше пространства для прокрутки */
+            overflow-y: auto;
+            padding-right: 10px; /* Немного места для скроллбара */
+        }
+
+        .goal {
+            display: flex;
+            align-items: center;
+            background: #2e2e2e; /* Чуть светлее фон для контраста */
+            padding: 18px 20px;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Добавлена тень */
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .goal:hover {
+            transform: scale(1.03);
+            background-color: #444;
+        }
+
+        .goal.completed {
+            background: #1c1c1c;
+            opacity: 0.5;
+            text-decoration: line-through; /* Визуальное отображение завершения */
+        }
+
+        .goal-color {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 20px;
+            flex-shrink: 0; /* Чтобы не сжимался */
+            border: 2px solid #555; /* Добавлена рамка */
+        }
+
+        .goal-details {
+            flex: 1;
+        }
+
+        .goal-details h3 {
+            font-size: 22px;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+
+        .goal-details p {
+            font-size: 16px;
+            color: #bbb;
+        }
+
+        .goal-checkbox {
+            margin-left: 20px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+
+        @media (max-width: 500px) {
+            body {
+                padding: 20px;
+                font-size: 16px;
+            }
+
+            .auth-container, .main-container {
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .auth-container h2, .main-container h2 {
+                font-size: 24px;
+            }
+
+            .goal-details h3 {
+                font-size: 18px;
+            }
+
+            .goal-details p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container" id="auth-container">
+    <h2 id="auth-title">Register</h2>
+    <input type="text" id="login" placeholder="Login" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button id="auth-btn">Register</button>
+    <div class="auth-toggle" id="auth-toggle">Already have an account? Login</div>
+</div>
+
+<div class="main-container hidden" id="main-container">
+    <h2>My Goals</h2>
+    <div class="goal-form">
+        <input type="text" id="goal-title" placeholder="Goal Title" required>
+        <input type="text" id="goal-description" placeholder="Goal Description" required>
+        <select id="goal-color" required>
+            <option value="RED">Red</option>
+            <option value="BLUE">Blue</option>
+            <option value="GREEN">Green</option>
+            <option value="YELLOW">Yellow</option>
+        </select>
+        <button id="add-goal-btn">Add Goal</button>
+    </div>
+    <div class="goals-list" id="goals-list"></div>
+</div>
+
+<script>
+    const authContainer = document.getElementById('auth-container');
+    const mainContainer = document.getElementById('main-container');
+    const authTitle = document.getElementById('auth-title');
+    const authBtn = document.getElementById('auth-btn');
+    const authToggle = document.getElementById('auth-toggle');
+    const loginInput = document.getElementById('login');
+    const passwordInput = document.getElementById('password');
+    const goalsList = document.getElementById('goals-list');
+    const goalTitleInput = document.getElementById('goal-title');
+    const goalDescriptionInput = document.getElementById('goal-description');
+    const goalColorSelect = document.getElementById('goal-color');
+    const addGoalBtn = document.getElementById('add-goal-btn');
+
+    let token = null;
+    let isRegisterMode = true;
+    let goals = [];
+
+    authToggle.addEventListener('click', () => {
+        isRegisterMode = !isRegisterMode;
+        authTitle.textContent = isRegisterMode ? 'Register' : 'Login';
+        authBtn.textContent = isRegisterMode ? 'Register' : 'Login';
+        authToggle.textContent = isRegisterMode ? 'Already have an account? Login' : "Don't have an account? Register";
+    });
+
+    authBtn.addEventListener('click', async () => {
+        const login = loginInput.value;
+        const password = passwordInput.value;
+        if (!login || !password) {
+            alert('Please fill in both fields');
+            return;
+        }
+
+        const endpoint = isRegisterMode ? '/auth/register' : '/auth/login';
+        try {
+            const response = await fetch(`https://localhost:8000${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ login, password })
+            });
+            const data = await response.json();
+            if (response.ok && data.token) {
+                token = data.token;
+                authContainer.classList.add('hidden');
+                mainContainer.classList.remove('hidden');
+                fetchGoals();
+            } else {
+                alert('Authentication failed');
+            }
+        } catch (error) {
+            console.error('Auth error:', error);
+            alert('An error occurred during authentication');
+        }
+    });
+
+    async function fetchGoals() {
+        try {
+            const response = await fetch('https://localhost:8000/goal/get-all', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                goals = data.goals || [];
+                renderGoals();
+            } else {
+                alert('Failed to fetch goals');
+            }
+        } catch (error) {
+            console.error('Error fetching goals:', error);
+            alert('An error occurred while fetching goals');
+        }
+    }
+
+    async function addGoal() {
+        const title = goalTitleInput.value;
+        const description = goalDescriptionInput.value;
+        const color = goalColorSelect.value;
+        if (!title || !description) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        const newGoal = {
+            id: Date.now().toString(),
+            title,
+            description,
+            color,
+            date: new Date().toISOString(),
+            success: false
+        };
+
+        try {
+            const response = await fetch('https://localhost:8000/goal/create', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newGoal)
+            });
+            if (response.ok) {
+                goals.push(newGoal);
+                renderGoals();
+                goalTitleInput.value = '';
+                goalDescriptionInput.value = '';
+            } else {
+                alert('Failed to add goal');
+            }
+        } catch (error) {
+            console.error('Error adding goal:', error);
+            alert('An error occurred while adding the goal');
+        }
+    }
+
+    async function updateGoalCompletion(goalId, isCompleted) {
+        const goal = goals.find(g => g.id === goalId);
+        if (!goal) return;
+
+        let link;
+        try {
+            if (isCompleted) {
+                link = `https://localhost:8000/goal/success/${goalId}`
+            } else {
+                link = `https://localhost:8000/goal/unsuccessful/${goalId}`
+            }
+            const response = await fetch(link, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                goal.success = isCompleted;
+                renderGoals();
+            } else {
+                alert('Failed to update goal status');
+            }
+        } catch (error) {
+            console.error('Error updating goal:', error);
+            alert('An error occurred while updating the goal');
+        }
+    }
+
+    function renderGoals() {
+        goalsList.innerHTML = '';
+        if (goals.length === 0) {
+            goalsList.innerHTML = '<p>No goals yet.</p>';
+            return;
+        }
+
+        // Sort goals: incomplete first, completed last
+        const sortedGoals = [...goals].sort((a, b) => a.success - b.success);
+
+        sortedGoals.forEach(goal => {
+            const goalElement = document.createElement('div');
+            goalElement.classList.add('goal');
+            if (goal.success) {
+                goalElement.classList.add('completed');
+            }
+            const colorHex = {
+                RED: '#ff6f61',
+                BLUE: '#61dafb',
+                GREEN: '#28a745',
+                YELLOW: '#ffc107'
+            }[goal.color] || '#fff';
+            goalElement.innerHTML = `
+                <div class="goal-color" style="background: ${colorHex}"></div>
+                <div class="goal-details">
+                    <h3>${goal.title}</h3>
+                    <p>${goal.description}</p>
+                </div>
+                <input type="checkbox" class="goal-checkbox" ${goal.success ? 'checked' : ''}>
+            `;
+            const checkbox = goalElement.querySelector('.goal-checkbox');
+            checkbox.addEventListener('change', () => {
+                updateGoalCompletion(goal.id, checkbox.checked);
+            });
+            goalsList.appendChild(goalElement);
+        });
+    }
+
+    addGoalBtn.addEventListener('click', addGoal);
+</script>
+</body>
+</html>
